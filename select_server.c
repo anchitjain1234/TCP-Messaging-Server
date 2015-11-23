@@ -3,7 +3,6 @@
 //
 
 #include "select_server.h"
-
 void sendmessage(char *message,int grno,int groupinfo[][MAX_CLIENTS],int *clients)
 {
     int i,j;
@@ -34,25 +33,25 @@ void addtogroup(int groupinfo[][MAX_CLIENTS],int grno,int fd)
     {
         if(groupinfo[grno][i]==fd)
         {
-            char messa3[50]="Already in group\n";
-            write(fd,messa3,strlen(messa3));
+            char rep[50]="Already in group\n";
+            write(fd,rep,strlen(rep));
             break;
         }
 
         if(groupinfo[grno][i]!=-1)
         {
-            if(i==MAX_CLIENTS-1)
-            {
-                char messa4[100]="No more members can be added to group\n";
-                write(fd,messa4,strlen(messa4));
-                break;
-            }
+//            if(i==MAX_CLIENTS-1)
+//            {
+//                char messa4[100]="No more members can be added to group\n";
+//                write(fd,messa4,strlen(messa4));
+//                break;
+//            }
             continue;
         }
 
         groupinfo[grno][i]=fd;
-        char messa[50]="Added to group\n";
-        write(fd,messa,strlen(messa));
+        char rep[50]="Added to group\n";
+        write(fd,rep,strlen(rep));
         break;
     }
 }
@@ -62,7 +61,8 @@ void messageprocess(char *mess,int *clients,int groupinfo[][MAX_CLIENTS],int *cl
     int i,j,len;
     len=strlen(mess);
 
-    if(len>=5 && mess[0]=='G' && mess[1]=='R' && mess[2]=='O' && mess[3]=='U' && mess[4]=='P' && mess[5]=='$')
+    char const1[10]="GROUP$",const2[10]="GROUPMSG";
+    if((strstr(mess,const1)-mess)==0)
     {
         char grno[20];
         memset(grno,'\0',20);
@@ -89,14 +89,14 @@ void messageprocess(char *mess,int *clients,int groupinfo[][MAX_CLIENTS],int *cl
         grp=atoi(grno);
         if(grp>=MAX_GROUPS)
         {
-            char messa2[100]="Please enter group number less than 100\n";
-            write(fd,messa2,strlen(messa2));
+            char rep[100]="Please enter group number less than 100\n";
+            write(fd,rep,strlen(rep));
             return;
         }
         cligroup[fd]=grp;
         addtogroup(groupinfo,grp,fd);
     }
-    else if(len>=8 && mess[0]=='G' && mess[1]=='R' && mess[2]=='O' && mess[3]=='U' && mess[4]=='P' && mess[5]=='M' && mess[6]=='S' && mess[7]=='G')
+    else if((strstr(mess,const2)-mess)==0)
     {
         char grno[20],message[MAXLINE];
         memset(grno,'\0',20);
@@ -118,23 +118,21 @@ void messageprocess(char *mess,int *clients,int groupinfo[][MAX_CLIENTS],int *cl
         grp=atoi(grno);
         if(grp>=MAX_GROUPS)
         {
-            char messa2[100]="Please enter group number less than 100\n";
-            write(fd,messa2,strlen(messa2));
+            char rep[100]="Please enter group number less than 100\n";
+            write(fd,rep,strlen(rep));
             return;
         }
 
 
         for(j=i+1;j<len;j++)
         {
-            // if(mess[i]=='\r' || mess[i]=='\n' || mess[i]=='\0')
-            //     break;
             message[j-i-1]=mess[j];
         }
 
         if(strlen(message)==0)
         {
             perror("No message entered\n");
-            exit(0);
+//            exit(0);
         }
         sendmessage(message,grp,groupinfo,NULL);
     }
@@ -168,7 +166,7 @@ int main(int argc,char *argv[])
     bzero(&server_address,sizeof(server_address));
     server_address.sin_family=AF_INET;
     server_address.sin_addr.s_addr=htonl(INADDR_ANY);
-    server_address.sin_port=htons(atoi(argv[1]));
+    server_address.sin_port=htons((uint16_t )atoi(argv[1]));
     int re=bind(serverfd,(struct sockaddr *)&server_address,sizeof(server_address));
     if(re==-1)
     {
@@ -212,7 +210,18 @@ int main(int argc,char *argv[])
             }
 
             printf ("new client: %d, port %d\n",inet_ntop (AF_INET, &client_address.sin_addr, 4, NULL), ntohs (client_address.sin_port));
-
+            char me[100]="\nWelcome to server\nUsage:\n";
+            write(clientfd,me,strlen(me));
+            bzero(me,sizeof(me));
+            strcpy(me,"1.To add to the group send GROUP$ID, where ID is group number between 1 & 100\n");
+            write(clientfd,me,strlen(me));
+            bzero(me,sizeof(me));
+            strcpy(me,"2.To send message to the group send GROUP$ID$MSG, where ID is group number between 1 & 100 and $MSG is the message\n");
+            write(clientfd,me,strlen(me));
+            bzero(me,sizeof(me));
+            strcpy(me,"3.To send message all the members just type the message.\n\n");
+            write(clientfd,me,strlen(me));
+           	
             for(i = 0; i < MAX_CLIENTS; i++)
                 if (clients[i] < 0)
                 {
@@ -264,3 +273,4 @@ int main(int argc,char *argv[])
 
     return 0;
 }
+
