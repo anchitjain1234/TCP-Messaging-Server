@@ -2,9 +2,12 @@
 
 
 #include "./select_server.h"
+
+
 void sendmessage(char *message, int grno,
                  int groupinfo[][MAX_CLIENTS], int *clients) {
     int i, j;
+
     if (grno == -1) {
         for (i = 0; i < MAX_CLIENTS; i++) {
             if (clients[i] == -1)
@@ -22,6 +25,7 @@ void sendmessage(char *message, int grno,
 
 void addtogroup(int groupinfo[][MAX_CLIENTS], int grno, int fd) {
     int i;
+
     for (i = 0; i < MAX_CLIENTS; i++) {
         if (groupinfo[grno][i] == fd) {
             char rep[50] = "Already in group\n";
@@ -40,8 +44,10 @@ void addtogroup(int groupinfo[][MAX_CLIENTS], int grno, int fd) {
         }
 
         groupinfo[grno][i] = fd;
+
         char rep[50] = "Added to group\n";
         write(fd, rep, strlen(rep));
+
         break;
     }
 }
@@ -78,12 +84,16 @@ void messageprocess(char *mess, int *clients,
             write(fd, rep, strlen(rep));
             return;
         }
+
         cligroup[fd] = grp;
         addtogroup(groupinfo, grp, fd);
+
     } else if ((strstr(mess, const2) - mess) == 0) {
         char grno[20], message[MAXLINE];
+
         memset(grno, '\0', 20);
         memset(message, '\0', MAXLINE);
+
         int grp;
 
         for (i = 9; i < len; i++) {
@@ -97,12 +107,12 @@ void messageprocess(char *mess, int *clients,
             exit(0);
         }
         grp = atoi(grno);
+
         if (grp >= MAX_GROUPS) {
             char rep[100] = "Please enter group number less than 100\n";
             write(fd, rep, strlen(rep));
             return;
         }
-
 
         for (j = i + 1; j < len; j++) {
             message[j - i - 1] = mess[j];
@@ -126,23 +136,29 @@ int main(int argc, char *argv[]) {
 
     struct sockaddr_in client_address, server_address;
     char buff[MAXLINE];
+
     int serverfd, clientfd, clilen, sockfd, clients[MAX_CLIENTS],
         groupinfo[MAX_GROUPS][MAX_CLIENTS], cligroup[1024];
     int i, j, maxi, maxfd, fdready;
+
     ssize_t n;
     fd_set all, read_set;
 
     serverfd = socket(AF_INET, SOCK_STREAM, 0);
+
     if (serverfd < 0) {
         perror("Error in creating socket\n");
         exit(-1);
     }
+
     bzero(&server_address, sizeof(server_address));
     server_address.sin_family = AF_INET;
     server_address.sin_addr.s_addr = htonl(INADDR_ANY);
     server_address.sin_port = htons((uint16_t)atoi(argv[1]));
+
     int re = bind(serverfd, (struct sockaddr *)&server_address,
                   sizeof(server_address));
+
     if (re == -1) {
         perror("Error in binding socket\n");
         exit(-1);
@@ -181,9 +197,12 @@ int main(int argc, char *argv[]) {
                 exit(-1);
             }
 
-            printf("new client: %d, port %d\n",
-                   inet_ntop(AF_INET, &client_address.sin_addr, 4, NULL),
-                   ntohs(client_address.sin_port));
+            int ipAddr = (&client_address)->sin_addr.s_addr;
+            char ipstr[INET_ADDRSTRLEN];
+            inet_ntop(AF_INET, &ipAddr, ipstr, INET_ADDRSTRLEN);
+            printf("new client: %s, port %d\n",
+                   ipstr, ntohs(client_address.sin_port));
+
             char me[100] = "\nWelcome to server\nUsage:\n";
             write(clientfd, me, strlen(me));
             bzero(me, sizeof(me));
@@ -223,8 +242,10 @@ int main(int argc, char *argv[]) {
         for (i = 0; i <= maxi; i++) {
             if ((sockfd = clients[i]) < 0)
                 continue;
+
             if (FD_ISSET(sockfd, &read_set)) {
                 memset(buff, '\0', MAXLINE);
+
                 if ((n = read(sockfd, buff, MAXLINE)) == 0) {
                     /*connection closed by client */
                     close(sockfd);
