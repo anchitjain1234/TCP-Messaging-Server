@@ -1,9 +1,7 @@
-//
-// Created by anchit on 17/11/15.
-//
+/* Copyright 2015 Anchit Jain */
 
-#ifndef SELECT_SERVER_SELECT_SERVER_H
-#define SELECT_SERVER_SELECT_SERVER_H
+#ifndef SELECT_SERVER_H_
+#define SELECT_SERVER_H_
 
 #include <stdio.h>
 #include <sys/socket.h>
@@ -20,4 +18,4 @@
 #define MAXLINE 800
 #define MAX_CLIENTS 500
 #define MAX_GROUPS 100
-#endif //SELECT_SERVER_SELECT_SERVER_H
+#endif  // SELECT_SERVER_H_

@@ -45,14 +45,14 @@ This repository contains code for basic **concurrent TCP messaging server** whic
 * To **send** the message to all the **clients in a group** type following message in telnet    
 
 	```sh
-	GROUP$<ID>$<MSG>
+	GROUPMSG$<ID>$<MSG>
 	```  
 	
 	here **ID** is the group number to which message should be sent and **MSG** is message to be sent.  
 	For e.g. typing  
 	
 	```sh
-	GROUP$2$AASD
+	GROUPMSG$2$AASD
 	```  
 	
 	will send AASD to all the clients present in group 2.
