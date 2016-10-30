@@ -13,6 +13,7 @@
 #include <sys/select.h>
 #include <stdbool.h>
 #include <string.h>
+#include <arpa/inet.h>
 
 #define LISTENQ 15
 #define MAXLINE 800

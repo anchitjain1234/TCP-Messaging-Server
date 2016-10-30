@@ -52,12 +52,31 @@ void addtogroup(int groupinfo[][MAX_CLIENTS], int grno, int fd) {
     }
 }
 
+void rmfromgroup(int groupinfo[][MAX_CLIENTS], int grno, int fd) {
+    int i, check = 0;
+
+    for (i = 0; i < MAX_CLIENTS; i++) {
+        if (groupinfo[grno][i] == fd) {
+            check = 1;
+            groupinfo[grno][i] = -1;
+            char rep[50] = "Removed from group\n";
+            write(fd, rep, strlen(rep));
+            break;
+        }
+    }
+    if(check == 0)
+    {
+        char rep[50] = "Not present in group\n";
+        write(fd, rep, strlen(rep));
+    }
+}
+
 void messageprocess(char *mess, int *clients,
                     int groupinfo[][MAX_CLIENTS], int *cligroup, int fd) {
     int i, j, len;
     len = strlen(mess);
 
-    char const1[10] = "GROUP$", const2[10] = "GROUPMSG";
+    char const1[10] = "GROUP$", const2[10] = "GROUPMSG", const3[10] = "GROUPRM$";
     if ((strstr(mess, const1) - mess) == 0) {
         char grno[20];
         memset(grno, '\0', 20);
@@ -87,6 +106,35 @@ void messageprocess(char *mess, int *clients,
 
         cligroup[fd] = grp;
         addtogroup(groupinfo, grp, fd);
+
+    } else if ((strstr(mess, const3) - mess) == 0) {
+        char grno[20];
+        memset(grno, '\0', 20);
+        int grp;
+
+        if (len < 9) {
+            perror("No group number entered\n");
+            exit(0);
+        }
+
+        for (i = 8; i < len; i++) {
+            if (mess[i] == '\r' || mess[i] == '\n' || mess[i] == '\0')
+                break;
+            grno[i - 8] = mess[i];
+        }
+
+        if (strlen(grno) == 0) {
+            perror("No group number entered\n");
+            exit(0);
+        }
+        grp = atoi(grno);
+        if (grp >= MAX_GROUPS) {
+            char rep[100] = "Please enter group number less than 100\n";
+            write(fd, rep, strlen(rep));
+            return;
+        }
+
+        rmfromgroup(groupinfo, grp, fd);
 
     } else if ((strstr(mess, const2) - mess) == 0) {
         char grno[20], message[MAXLINE];
