@@ -1,8 +1,8 @@
 # Select based TCP messaging server
-This repository contains code for basic **concurrent TCP messaging server** which reads client request using **select system call** and iterates over them rather than creating a child process for every client.
+This repository contains code for a basic **concurrent TCP messaging server** which reads the client request using **select system call** and iterates over them rather than creating a child process for every client.
 
 #### Compiling
-* Type following command to generate executable __server__  
+* Type the following command to generate executable __server__  
 
 	``` sh
 	$ make
@@ -11,7 +11,7 @@ This repository contains code for basic **concurrent TCP messaging server** whic
 	
 	
 #### Running
-* To run __server__ type 
+* To run the __server__ type 
 	
 	``` sh
 	$ ./server <port>
